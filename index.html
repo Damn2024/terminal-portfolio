@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: black;
+            color: green;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #terminal {
+            height: 100vh;
+            padding: 20px;
+            overflow-y: auto;
+            white-space: pre;
+            border: 1px solid green;
+        }
+
+        #input {
+            border: none;
+            background: none;
+            color: green;
+            outline: none;
+            width: 100%;
+        }
+        
+        #input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div id="terminal" class="border rounded">
+            <div id="output"></div>
+            <div>
+                <span>$</span>
+                <input type="text" id="input" autofocus />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputField = document.getElementById('input');
+        const outputDiv = document.getElementById('output');
+
+        // Command history
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        // Function to execute commands
+        function executeCommand(command) {
+            // Basic command handling
+            let response = '';
+            if (command === 'help') {
+                response = 'Available commands: help, clear, echo <message>';
+            } else if (command === 'clear') {
+                outputDiv.innerHTML = '';
+                return; // Exit early, no need to add to output
+            } else if (command.startsWith('echo ')) {
+                response = command.substring(5); // Remove "echo "
+            } else {
+                response = `Command not found: ${command}`;
+            }
+
+            // Add output to terminal
+            outputDiv.innerHTML += `$ ${command}\n${response}\n\n`;
+            outputDiv.scrollTop = outputDiv.scrollHeight; // Auto-scroll
+            commandHistory.push(command);
+            historyIndex = commandHistory.length; // Reset history index
+            inputField.value = ''; // Clear input
+        }
+
+        // Handle input submission
+        inputField.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const command = inputField.value.trim();
+                if (command) {
+                    executeCommand(command);
+                }
+            } else if (event.key === 'ArrowUp') {
+                // Navigate command history
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    inputField.value = commandHistory[historyIndex] || '';
+                }
+            } else if (event.key === 'ArrowDown') {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    inputField.value = commandHistory[historyIndex] || '';
+                } else {
+                    historyIndex = commandHistory.length; // Reset to new command
+                    inputField.value = '';
+                }
+            }
+        });
+
+        // Initial prompt
+        outputDiv.innerHTML = 'Welcome to the Terminal! Type "help" for a list of commands.\n';
+    </script>
+</body>
+</html>
